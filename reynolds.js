@@ -13,6 +13,24 @@ function draw()
 
 function update()
 {
+	boids.forEach(function(boid){
+		boid.x += boid.vx;
+		boid.y += boid.vy;
+		
+		if(boid.x > SCREEN_W){
+			boid.x = 0;
+		}else if(boid.x < 0){
+			boid.x = SCREEN_W;
+		}
+		
+		if(boid.y > SCREEN_H){
+			boid.y = 0;
+		}else if(boid.y < 0){
+			boid.y = SCREEN_H;
+		}
+		
+	});
+	
 }
 
 function main()
@@ -41,8 +59,8 @@ function load_elements(){
 		{
 			x : 100,
 			y : 100,
-			vx : 5,
-			vy : 5
+			vx : 3,
+			vy : 3
 		}
 	);
 }
