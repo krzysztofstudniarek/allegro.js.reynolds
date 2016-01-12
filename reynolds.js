@@ -2,6 +2,7 @@
 var boidSprite;
 
 var boids;
+var obstacles;
 
 function draw()
 {
@@ -9,6 +10,9 @@ function draw()
 		rotate_sprite(canvas,boidSprite,boid.x,boid.y,DEG(Math.atan2(boid.vy,boid.vx)));
 	});
 	
+	obstacles.forEach(function(obstacle){
+		circlefill(canvas,obstacle.x,obstacle.y,obstacle.radius,makecol(0,0,255));
+	});
 }
 
 function update()
@@ -30,6 +34,10 @@ function update()
 		}
 		
 	});
+	
+}
+
+function ai(){
 	
 }
 
@@ -55,12 +63,21 @@ function load_elements(){
 	boidSprite = load_bitmap("boid.png");
 	
 	boids = new Set();
-	boids.add(
-		{
-			x : 100,
-			y : 100,
-			vx : 3,
-			vy : 3
-		}
-	);
+	for(var i = 0; i<10; i++){
+		boids.add({
+			x : SCREEN_W/2 + rand()%200 - 100,
+			y : SCREEN_H/2+ rand()%200 - 100,
+			vx : frand()*6 - 3,
+			vy : frand()*6 - 3
+		});
+	}
+	
+	obstacles = new Set();
+	
+	obstacles.add({
+		x : 100,
+		y : 100,
+		radius : 50
+	});
+	
 }
