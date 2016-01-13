@@ -47,13 +47,13 @@ function ai(){
 		var neighbors = new Set();
 		
 		boids.forEach(function(neighbor){
-			if(neighbor != boid && distance(boid.x, boid.y, neighbor.x, neighbor.y)<50){
+			if(neighbor != boid && distance(boid.x, boid.y, neighbor.x, neighbor.y)<30){
 				neighbors.add(neighbor);
 			}
 		});
 		
 		//Alignment
-		if(frand()<= 0.1){
+		if(frand()< 0.1){
 			var ang = 0;
 			var avgVx = 0;
 			var avgVy = 0;
@@ -70,8 +70,56 @@ function ai(){
 				
 				var n = Math.sqrt(boid.vx*boid.vx + boid.vy*boid.vy);
 				
-				boid.vx = boid.vx*3/n;
-				boid.vy = boid.vy*3/n;
+				boid.vx = boid.vx/n;
+				boid.vy = boid.vy/n;
+				
+			}
+		}
+		
+		//Cohesion
+		if(frand()<= 0.01){
+			var ang = 0;
+			var avgVx = 0;
+			var avgVy = 0;
+			neighbors.forEach(function(neighbor){
+				//ang += Math.atan(neighbor.vy/neighbor.vx);
+				avgVx += neighbor.x;
+				avgVy += neighbor.y;
+			});
+			
+			if(neighbors.size != 0){
+				ang =  Math.atan(avgVy/avgVx);
+				boid.vx = avgVx/neighbors.size - boid.x;
+				boid.vy = avgVy/neighbors.size - boid.y;
+				
+				var n = Math.sqrt(boid.vx*boid.vx + boid.vy*boid.vy);
+				
+				boid.vx = boid.vx/n;
+				boid.vy = boid.vy/n;
+				
+			}
+		}
+		
+		//Cohesion
+		if(frand()<= 0.01){
+			var ang = 0;
+			var avgVx = 0;
+			var avgVy = 0;
+			neighbors.forEach(function(neighbor){
+				//ang += Math.atan(neighbor.vy/neighbor.vx);
+				avgVx += neighbor.x - boid.x;
+				avgVy += neighbor.y - boid.y;
+			});
+			
+			if(neighbors.size != 0){
+				ang =  Math.atan(avgVy/avgVx);
+				boid.vx = -1*avgVx/neighbors.size;
+				boid.vy = -1*avgVy/neighbors.size;
+				
+				var n = Math.sqrt(boid.vx*boid.vx + boid.vy*boid.vy);
+				
+				boid.vx = boid.vx/n;
+				boid.vy = boid.vy/n;
 				
 			}
 		}
@@ -89,22 +137,22 @@ function ai(){
 				console.log(gamma + " : "+ alpha);
 				if(boid.x < obstacle.x){
 					if(gamma > 0){
-						boid.vx = 3*Math.cos(gamma-alpha);
-						boid.vy = 3*Math.sin(gamma-alpha);
+						boid.vx = Math.cos(gamma-alpha);
+						boid.vy = Math.sin(gamma-alpha);
 						console.log(gamma);
 					}else{
-						boid.vx = 3*Math.cos(gamma+alpha);
-						boid.vy = 3*Math.sin(gamma+alpha);
+						boid.vx = Math.cos(gamma+alpha);
+						boid.vy = Math.sin(gamma+alpha);
 						console.log(gamma);
 					}
 				}else{
 					if(gamma > 0){
-						boid.vx = -3*Math.cos(gamma-alpha);
-						boid.vy = 3*Math.sin(gamma-alpha);
+						boid.vx = -1*Math.cos(gamma-alpha);
+						boid.vy = Math.sin(gamma-alpha);
 						console.log(gamma);
 					}else{
-						boid.vx = -3*Math.cos(gamma+alpha);
-						boid.vy = 3*Math.sin(gamma+alpha);
+						boid.vx = -1*Math.cos(gamma+alpha);
+						boid.vy = Math.sin(gamma+alpha);
 						console.log(gamma);
 					}
 
@@ -143,8 +191,8 @@ function load_elements(){
 		boids.add({
 			x : rand()%SCREEN_W,
 			y : rand()%SCREEN_H,
-			vx : sgn(2*frand()-1)*3*Math.cos(angle),
-			vy : sgn(2*frand()-1)*3*Math.sin(angle)
+			vx : sgn(2*frand()-1)*Math.cos(angle),
+			vy : sgn(2*frand()-1)*Math.sin(angle)
 		});
 	}
 	
