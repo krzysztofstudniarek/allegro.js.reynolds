@@ -11,7 +11,7 @@ function draw()
 	});
 	
 	obstacles.forEach(function(obstacle){
-		circlefill(canvas,obstacle.x,obstacle.y,obstacle.radius,makecol(0,0,255, 125));
+		circlefill(canvas,obstacle.x,obstacle.y,obstacle.radius,makecol(0,0,255));
 	});
 }
 
@@ -43,15 +43,15 @@ function ai(){
 	boids.forEach(function(boid){
 		obstacles.forEach(function(obstacle){
 			d = distance(obstacle.x, obstacle.y, boid.x, boid.y);
-			alpha = Math.asin((obstacle.radius)/d);
+			alpha = Math.asin((obstacle.radius+10)/d);
 			
 			d1 = distance(0, 0, boid.vx, boid.vy);
 			betha = Math.acos(((boid.vx*(obstacle.x-boid.x))+(boid.vy*(obstacle.y-boid.y)))/(d*d1));
 			//log(alpha > betha);
-			if(alpha > betha && d < obstacle.radius + 100){
+			if(alpha > betha && d < obstacle.radius + 300){
 				gamma = (Math.asin((obstacle.y - boid.y)/d));
 				console.log(gamma + " : "+ alpha);
-				if(boid.x <= obstacle.x){
+				if(boid.x < obstacle.x){
 					if(gamma > 0){
 						boid.vx = 3*Math.cos(gamma-alpha);
 						boid.vy = 3*Math.sin(gamma-alpha);
@@ -101,7 +101,7 @@ function load_elements(){
 	boidSprite = load_bitmap("boid.png");
 	
 	boids = new Set();
-	for(var i = 0; i<100; i++){
+	for(var i = 0; i<50; i++){
 		boids.add({
 			x : rand()%SCREEN_W,
 			y : rand()%SCREEN_H,
@@ -113,9 +113,15 @@ function load_elements(){
 	obstacles = new Set();
 	
 	obstacles.add({
-		x : SCREEN_W/2,
-		y : SCREEN_H/2,
-		radius : 100
+		x : SCREEN_W/2-200,
+		y : SCREEN_H/2-100,
+		radius : 50
+	});
+	
+	obstacles.add({
+		x : SCREEN_W/2+200,
+		y : SCREEN_H/2+100,
+		radius : 50
 	});
 	
 	
