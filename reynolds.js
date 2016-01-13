@@ -47,83 +47,30 @@ function ai(){
 		var neighbors = new Set();
 		
 		boids.forEach(function(neighbor){
-			if(neighbor != boid && distance(boid.x, boid.y, neighbor.x, neighbor.y)<30){
+			if(neighbor != boid && distance(boid.x, boid.y, neighbor.x, neighbor.y)<50){
 				neighbors.add(neighbor);
 			}
 		});
 		
+		var tmp = frand();
+		
 		//Alignment
-		if(frand()< 0.1){
-			var ang = 0;
-			var avgVx = 0;
-			var avgVy = 0;
-			neighbors.forEach(function(neighbor){
-				//ang += Math.atan(neighbor.vy/neighbor.vx);
-				avgVx += neighbor.vx;
-				avgVy += neighbor.vy;
-			});
-			
-			if(neighbors.size != 0){
-				ang =  Math.atan(avgVy/avgVx);
-				boid.vx = avgVx/neighbors.size;
-				boid.vy = avgVy/neighbors.size;
-				
-				var n = Math.sqrt(boid.vx*boid.vx + boid.vy*boid.vy);
-				
-				boid.vx = boid.vx/n;
-				boid.vy = boid.vy/n;
-				
-			}
-		}
+		if(tmp <= 0.1)
+			alignment(boid, neighbors);
 		
 		//Cohesion
-		if(frand()<= 0.01){
-			var ang = 0;
-			var avgVx = 0;
-			var avgVy = 0;
-			neighbors.forEach(function(neighbor){
-				//ang += Math.atan(neighbor.vy/neighbor.vx);
-				avgVx += neighbor.x;
-				avgVy += neighbor.y;
-			});
-			
-			if(neighbors.size != 0){
-				ang =  Math.atan(avgVy/avgVx);
-				boid.vx = avgVx/neighbors.size - boid.x;
-				boid.vy = avgVy/neighbors.size - boid.y;
-				
-				var n = Math.sqrt(boid.vx*boid.vx + boid.vy*boid.vy);
-				
-				boid.vx = boid.vx/n;
-				boid.vy = boid.vy/n;
-				
-			}
-		}
+		if(tmp <= 0.03)
+			cohesion(boid, neighbors);
 		
-		//Cohesion
-		if(frand()<= 0.01){
-			var ang = 0;
-			var avgVx = 0;
-			var avgVy = 0;
-			neighbors.forEach(function(neighbor){
-				//ang += Math.atan(neighbor.vy/neighbor.vx);
-				avgVx += neighbor.x - boid.x;
-				avgVy += neighbor.y - boid.y;
-			});
-			
-			if(neighbors.size != 0){
-				ang =  Math.atan(avgVy/avgVx);
-				boid.vx = -1*avgVx/neighbors.size;
-				boid.vy = -1*avgVy/neighbors.size;
-				
-				var n = Math.sqrt(boid.vx*boid.vx + boid.vy*boid.vy);
-				
-				boid.vx = boid.vx/n;
-				boid.vy = boid.vy/n;
-				
-			}
-		}
+		//Separation
+		if(tmp <= 0.03)
+			separation(boid, neighbors);
 		
+		//Velocity normalization
+		normalize_velocity(boid);
+	
+	
+	
 		//Obstacle Avoidance
 		obstacles.forEach(function(obstacle){
 			d = distance(obstacle.x, obstacle.y, boid.x, boid.y);
@@ -139,21 +86,17 @@ function ai(){
 					if(gamma > 0){
 						boid.vx = Math.cos(gamma-alpha);
 						boid.vy = Math.sin(gamma-alpha);
-						console.log(gamma);
 					}else{
 						boid.vx = Math.cos(gamma+alpha);
 						boid.vy = Math.sin(gamma+alpha);
-						console.log(gamma);
 					}
 				}else{
 					if(gamma > 0){
 						boid.vx = -1*Math.cos(gamma-alpha);
 						boid.vy = Math.sin(gamma-alpha);
-						console.log(gamma);
 					}else{
 						boid.vx = -1*Math.cos(gamma+alpha);
 						boid.vy = Math.sin(gamma+alpha);
-						console.log(gamma);
 					}
 
 				}
@@ -185,7 +128,7 @@ function load_elements(){
 	boidSprite = load_bitmap("boid.png");
 	
 	boids = new Set();
-	for(var i = 0; i<100; i++){
+	for(var i = 0; i<50; i++){
 		
 		var angle = Math.asin(2*frand()-1);
 		boids.add({
@@ -217,4 +160,62 @@ function load_elements(){
 	});*/
 	
 	
+}
+
+function normalize_velocity(boid){
+	var n = Math.sqrt(boid.vx*boid.vx + boid.vy*boid.vy);
+				
+	boid.vx = boid.vx/n;
+	boid.vy = boid.vy/n;
+}
+
+function alignment(boid, neighbors){
+	var ang = 0;
+	var avgVx = 0;
+	var avgVy = 0;
+	neighbors.forEach(function(neighbor){
+		//ang += Math.atan(neighbor.vy/neighbor.vx);
+		avgVx += neighbor.vx;
+		avgVy += neighbor.vy;
+	});
+	
+	if(neighbors.size != 0){
+		ang =  Math.atan(avgVy/avgVx);
+		boid.vx += avgVx/neighbors.size;
+		boid.vy += avgVy/neighbors.size;	
+	}
+}
+
+function cohesion(boid, neighbors){
+	var ang = 0;
+	var avgVx = 0;
+	var avgVy = 0;
+	neighbors.forEach(function(neighbor){
+		//ang += Math.atan(neighbor.vy/neighbor.vx);
+		avgVx += neighbor.x;
+		avgVy += neighbor.y;
+	});
+	
+	if(neighbors.size != 0){
+		ang =  Math.atan(avgVy/avgVx);
+		boid.vx += avgVx/neighbors.size - boid.x;
+		boid.vy += avgVy/neighbors.size - boid.y;
+	}
+}
+
+function separation(boid, neighbors){
+	var ang = 0;
+	var avgVx = 0;
+	var avgVy = 0;
+	neighbors.forEach(function(neighbor){
+		//ang += Math.atan(neighbor.vy/neighbor.vx);
+		avgVx += neighbor.x - boid.x;
+		avgVy += neighbor.y - boid.y;
+	});
+	
+	if(neighbors.size != 0){
+		ang =  Math.atan(avgVy/avgVx);
+		boid.vx += -1*avgVx/neighbors.size;
+		boid.vy += -1*avgVy/neighbors.size;
+	}
 }
