@@ -41,6 +41,34 @@ function update()
 
 function ai(){
 	boids.forEach(function(boid){
+		
+		//Reynolds rules
+		
+		var neighbors = new Set();
+		
+		boids.forEach(function(neighbor){
+			if(neighbor != boid && distance(boid.x, boid.y, neighbor.x, neighbor.y)<50){
+				neighbors.add(neighbor);
+			}
+		});
+		
+		//Alignment
+		if(frand()<= 0.1){
+			var allX = 0, allY = 0;
+			neighbors.forEach(function(neighbor){
+				allX += neighbor.vx;
+				allY += neighbor.vy;
+			});
+			
+			if(neighbors.size != 0){
+				allX = allX/neighbors.size;
+				allY = allY/neighbors.size;
+				boid.vx = allX;
+				boid.vy = allY;
+			}
+		}
+		
+		//Obstacle Avoidance
 		obstacles.forEach(function(obstacle){
 			d = distance(obstacle.x, obstacle.y, boid.x, boid.y);
 			alpha = Math.asin((obstacle.radius+10)/d);
@@ -102,19 +130,28 @@ function load_elements(){
 	
 	boids = new Set();
 	for(var i = 0; i<50; i++){
+		
+		var angle = Math.asin(2*frand()-1);
+		console.log(angle);
 		boids.add({
 			x : rand()%SCREEN_W,
 			y : rand()%SCREEN_H,
-			vx : frand()%6 - 3,
-			vy : frand()%6 - 3
+			vx : sgn(2*frand()-1)*3*Math.cos(angle),
+			vy : sgn(2*frand()-1)*3*Math.sin(angle)
 		});
 	}
 	
 	obstacles = new Set();
 	
-	obstacles.add({
+	/*obstacles.add({
 		x : SCREEN_W/2-200,
 		y : SCREEN_H/2-100,
+		radius : 50
+	});
+	
+	obstacles.add({
+		x : SCREEN_W/2+50,
+		y : SCREEN_H/2-50,
 		radius : 50
 	});
 	
@@ -122,7 +159,7 @@ function load_elements(){
 		x : SCREEN_W/2+200,
 		y : SCREEN_H/2+100,
 		radius : 50
-	});
+	});*/
 	
 	
 }
