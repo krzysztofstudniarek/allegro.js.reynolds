@@ -33,31 +33,49 @@ function update()
 			boid.y = SCREEN_H;
 		}
 		
-		obstacles.forEach(function(obstacle){
-			d = distance(boid.x, boid.y, obstacle.x, obstacle.y);
-			alpha = Math.asin((obstacle.radius)/d);
-			
-			d1 = distance(0, 0, boid.vx, boid.vy);
-			betha = Math.acos(((boid.vx*(obstacle.x-boid.x))+(boid.vy*(obstacle.y-boid.y)))/(d*d1));
-			//log(alpha > betha);
-			if(alpha > betha && d <obstacle.radius + 100){
-				gamma = (Math.asin((obstacle.y - boid.y)/d));
-				if(gamma > 0){
-					boid.vx = 3*Math.cos(gamma-alpha);
-					boid.vy = 3*Math.sin(gamma-alpha);
-				}else{
-					boid.vx = 3*Math.cos(gamma+alpha);
-					boid.vy = 3*Math.sin(gamma+alpha);
-				}
-			}
-		});
+		
 		
 	});
 	
 }
 
 function ai(){
-	
+	boids.forEach(function(boid){
+		obstacles.forEach(function(obstacle){
+			d = distance(obstacle.x, obstacle.y, boid.x, boid.y);
+			alpha = Math.asin((obstacle.radius)/d);
+			
+			d1 = distance(0, 0, boid.vx, boid.vy);
+			betha = Math.acos(((boid.vx*(obstacle.x-boid.x))+(boid.vy*(obstacle.y-boid.y)))/(d*d1));
+			//log(alpha > betha);
+			if(alpha > betha && d < obstacle.radius + 100){
+				gamma = (Math.asin((obstacle.y - boid.y)/d));
+				console.log(gamma + " : "+ alpha);
+				if(boid.x <= obstacle.x){
+					if(gamma > 0){
+						boid.vx = 3*Math.cos(gamma-alpha);
+						boid.vy = 3*Math.sin(gamma-alpha);
+						console.log(gamma);
+					}else{
+						boid.vx = 3*Math.cos(gamma+alpha);
+						boid.vy = 3*Math.sin(gamma+alpha);
+						console.log(gamma);
+					}
+				}else{
+					if(gamma > 0){
+						boid.vx = -3*Math.cos(gamma-alpha);
+						boid.vy = 3*Math.sin(gamma-alpha);
+						console.log(gamma);
+					}else{
+						boid.vx = -3*Math.cos(gamma+alpha);
+						boid.vy = 3*Math.sin(gamma+alpha);
+						console.log(gamma);
+					}
+
+				}
+			}
+		});
+	});
 }
 
 function main()
@@ -70,6 +88,7 @@ function main()
 			wipe_log();
             clear_to_color(canvas,makecol(0,255,0));
             update();
+			ai();
             draw();
         },BPS_TO_TIMER(60));
     });
@@ -82,20 +101,20 @@ function load_elements(){
 	boidSprite = load_bitmap("boid.png");
 	
 	boids = new Set();
-	for(var i = 0; i<10; i++){
+	for(var i = 0; i<100; i++){
 		boids.add({
-			x : SCREEN_W-1 + rand()%50 - 100,
-			y : SCREEN_H-1 + rand()%50 - 100,
-			vx : frand()*6- 3,
-			vy : frand()*6- 3
+			x : rand()%SCREEN_W,
+			y : rand()%SCREEN_H,
+			vx : frand()%6 - 3,
+			vy : frand()%6 - 3
 		});
 	}
 	
 	obstacles = new Set();
 	
 	obstacles.add({
-		x : 150,
-		y : 150,
+		x : SCREEN_W/2,
+		y : SCREEN_H/2,
 		radius : 100
 	});
 	
