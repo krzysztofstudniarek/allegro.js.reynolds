@@ -108,7 +108,7 @@ function ai(){
 function main()
 {
     enable_debug('debug');
-    allegro_init_all("game_canvas", 640, 480);
+    allegro_init_all("game_canvas", 800, 600);
 	load_elements();
     ready(function(){
         loop(function(){
@@ -128,7 +128,7 @@ function load_elements(){
 	boidSprite = load_bitmap("boid.png");
 	
 	boids = new Set();
-	for(var i = 0; i<50; i++){
+	for(var i = 0; i<200; i++){
 		
 		var angle = Math.asin(2*frand()-1);
 		boids.add({

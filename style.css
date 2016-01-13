@@ -18,8 +18,8 @@ canvas { /* this applies to our game area */
  
 #debug { /* this applies to debug box */
 	text-align:left; /* align text to the left */
-	width:620px; /* set width to 630 pixels */
-	height:460px; /* set height to 460 pixels */
+	width:800px; /* set width to 630 pixels */
+	height:600px; /* set height to 460 pixels */
 	border:1px solid #888; /* draw border around the box */
 	font: 16px monospace; /* change fonto to monotype */
 	overflow: auto; /* enable scrollbars */
