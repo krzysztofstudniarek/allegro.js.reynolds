@@ -54,17 +54,25 @@ function ai(){
 		
 		//Alignment
 		if(frand()<= 0.1){
-			var allX = 0, allY = 0;
+			var ang = 0;
+			var avgVx = 0;
+			var avgVy = 0;
 			neighbors.forEach(function(neighbor){
-				allX += neighbor.vx;
-				allY += neighbor.vy;
+				//ang += Math.atan(neighbor.vy/neighbor.vx);
+				avgVx += neighbor.vx;
+				avgVy += neighbor.vy;
 			});
 			
 			if(neighbors.size != 0){
-				allX = allX/neighbors.size;
-				allY = allY/neighbors.size;
-				boid.vx = allX;
-				boid.vy = allY;
+				ang =  Math.atan(avgVy/avgVx);
+				boid.vx = avgVx/neighbors.size;
+				boid.vy = avgVy/neighbors.size;
+				
+				var n = Math.sqrt(boid.vx*boid.vx + boid.vy*boid.vy);
+				
+				boid.vx = boid.vx*3/n;
+				boid.vy = boid.vy*3/n;
+				
 			}
 		}
 		
@@ -129,10 +137,9 @@ function load_elements(){
 	boidSprite = load_bitmap("boid.png");
 	
 	boids = new Set();
-	for(var i = 0; i<50; i++){
+	for(var i = 0; i<100; i++){
 		
 		var angle = Math.asin(2*frand()-1);
-		console.log(angle);
 		boids.add({
 			x : rand()%SCREEN_W,
 			y : rand()%SCREEN_H,
