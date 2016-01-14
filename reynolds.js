@@ -4,6 +4,8 @@ var boidSprite;
 var boids;
 var obstacles;
 
+var score = 0;
+
 function draw()
 {
 	boids.forEach(function(boid){
@@ -86,7 +88,13 @@ function ai(){
 			var victim;
 			
 			boids.forEach(function(vict){
+				
+				if(vict.isPredator){
+					predators.add(vict);
+				}
+				
 				var d = distance(boid.x, boid.y, vict.x, vict.y)
+				
 				if(vict != boid && victim == undefined && d< 100 && !vict.isPredator){
 					victim = vict;
 				}else if(victim != undefined && vict != boid && d < 100 && d < distance(victim.x, victim.y, boid.x, boid.y)&& !vict.isPredator){
@@ -95,11 +103,18 @@ function ai(){
 			});
 			
 			if(victim != undefined){
-				boid.vx += victim.x - boid.x;
-				boid.vy += victim.y - boid.y;
 				
-				normalize_velocity(boid);
+				if(distance(boid.x, boid.y, victim.x, victim.y)<5){
+					boids.delete(victim);
+				}else{					
+					boid.vx += victim.x - boid.x;
+					boid.vy += victim.y - boid.y;
+					
+					normalize_velocity(boid);
+				}
+
 			}
+		
 		}
 	
 	
@@ -196,15 +211,9 @@ function load_elements(){
 }
 
 function normalize_velocity(boid){
-	var n = Math.sqrt(boid.vx*boid.vx + boid.vy*boid.vy);
-				
-	if(boid.isPredator){
-		boid.vx = 0.9*boid.vx/n;
-		boid.vy = 0.9*boid.vy/n;
-	}else{
-		boid.vx = boid.vx/n;
-		boid.vy = boid.vy/n;
-	}
+	var n = Math.sqrt(boid.vx*boid.vx + boid.vy*boid.vy);	
+	boid.vx = boid.vx/n;
+	boid.vy = boid.vy/n;
 }
 
 function alignment(boid, neighbors){
