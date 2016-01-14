@@ -7,7 +7,11 @@ var obstacles;
 function draw()
 {
 	boids.forEach(function(boid){
-		rotate_sprite(canvas,boidSprite,boid.x,boid.y,DEG(Math.atan2(boid.vy,boid.vx)));
+		if(!boid.isPredator){
+			rotate_sprite(canvas,boidSprite,boid.x,boid.y,DEG(Math.atan2(boid.vy,boid.vx)));
+		}else{
+			circlefill(canvas,boid.x,boid.y,7,makecol(255,0,0));
+		}
 	});
 	
 	obstacles.forEach(function(obstacle){
@@ -21,15 +25,15 @@ function update()
 		boid.x += boid.vx;
 		boid.y += boid.vy;
 		
-		if(boid.x > SCREEN_W){
+		if(boid.x >= SCREEN_W){
 			boid.x = 0;
-		}else if(boid.x < 0){
+		}else if(boid.x <= 0){
 			boid.x = SCREEN_W;
 		}
 		
-		if(boid.y > SCREEN_H){
+		if(boid.y >= SCREEN_H){
 			boid.y = 0;
-		}else if(boid.y < 0){
+		}else if(boid.y <= 0){
 			boid.y = SCREEN_H;
 		}
 		
@@ -45,30 +49,58 @@ function ai(){
 		//Reynolds rules
 		
 		var neighbors = new Set();
+		var predators = new Set();
 		
-		boids.forEach(function(neighbor){
-			if(neighbor != boid && distance(boid.x, boid.y, neighbor.x, neighbor.y)<50){
-				neighbors.add(neighbor);
+		if(!boid.isPredator){
+			
+			boids.forEach(function(neighbor){
+				if(neighbor != boid && distance(boid.x, boid.y, neighbor.x, neighbor.y)<50){
+					neighbors.add(neighbor);
+					if(neighbor.isPredator){
+						predators.add(neighbor);
+					}
+				}
+			});
+			
+			separation(boid, predators);
+			
+			var tmp = frand();
+			
+			//Alignment
+			if(tmp <= 0.1)
+				alignment(boid, neighbors);
+			
+			//Cohesion
+			if(tmp <= 0.03)
+				cohesion(boid, neighbors);
+			
+			//Separation
+			if(tmp <= 0.03)
+				separation(boid, neighbors);
+		
+			
+			//Velocity normalization
+			normalize_velocity(boid);
+		}else{
+			
+			var victim;
+			
+			boids.forEach(function(vict){
+				var d = distance(boid.x, boid.y, vict.x, vict.y)
+				if(vict != boid && victim == undefined && d< 50){
+					victim = vict;
+				}else if(vict != boid && d < 50 && d < distance(victim.x, victim.y, boid.x, boid.y)){
+					victim = vict;
+				}
+			});
+			
+			if(victim != undefined){
+				boid.vx += victim.x - boid.x;
+				boid.vy += victim.y - boid.y;
+				
+				normalize_velocity(boid);
 			}
-		});
-		
-		var tmp = frand();
-		
-		//Alignment
-		if(tmp <= 0.1)
-			alignment(boid, neighbors);
-		
-		//Cohesion
-		if(tmp <= 0.03)
-			cohesion(boid, neighbors);
-		
-		//Separation
-		if(tmp <= 0.03)
-			separation(boid, neighbors);
-		
-		//Velocity normalization
-		normalize_velocity(boid);
-	
+		}
 	
 	
 		//Obstacle Avoidance
@@ -135,7 +167,8 @@ function load_elements(){
 			x : rand()%SCREEN_W,
 			y : rand()%SCREEN_H,
 			vx : sgn(2*frand()-1)*Math.cos(angle),
-			vy : sgn(2*frand()-1)*Math.sin(angle)
+			vy : sgn(2*frand()-1)*Math.sin(angle),
+			isPredator : frand()<=0.01
 		});
 	}
 	
@@ -165,8 +198,13 @@ function load_elements(){
 function normalize_velocity(boid){
 	var n = Math.sqrt(boid.vx*boid.vx + boid.vy*boid.vy);
 				
-	boid.vx = boid.vx/n;
-	boid.vy = boid.vy/n;
+	if(boid.isPredator){
+		boid.vx = 0.9*boid.vx/n;
+		boid.vy = 0.9*boid.vy/n;
+	}else{
+		boid.vx = boid.vx/n;
+		boid.vy = boid.vy/n;
+	}
 }
 
 function alignment(boid, neighbors){
