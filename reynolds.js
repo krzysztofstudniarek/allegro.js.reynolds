@@ -87,9 +87,9 @@ function ai(){
 			
 			boids.forEach(function(vict){
 				var d = distance(boid.x, boid.y, vict.x, vict.y)
-				if(vict != boid && victim == undefined && d< 50){
+				if(vict != boid && victim == undefined && d< 100 && !vict.isPredator){
 					victim = vict;
-				}else if(vict != boid && d < 50 && d < distance(victim.x, victim.y, boid.x, boid.y)){
+				}else if(victim != undefined && vict != boid && d < 100 && d < distance(victim.x, victim.y, boid.x, boid.y)&& !vict.isPredator){
 					victim = vict;
 				}
 			});
@@ -168,7 +168,7 @@ function load_elements(){
 			y : rand()%SCREEN_H,
 			vx : sgn(2*frand()-1)*Math.cos(angle),
 			vy : sgn(2*frand()-1)*Math.sin(angle),
-			isPredator : frand()<=0.01
+			isPredator : frand()<=0.02
 		});
 	}
 	
