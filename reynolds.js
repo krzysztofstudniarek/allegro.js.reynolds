@@ -153,12 +153,15 @@ function load_elements(){
 	
 	obstacles = new Set();
 	
-	for(var i = 0 ; i<rand()%3+3; i++){
-		obstacles.add({
-			x : 75 + rand()%(SCREEN_W-250),
-			y : 75 + rand()%(SCREEN_H-250),
-			radius : rand()%50 + 25
-		});
+	for(var i = 160 ; i<SCREEN_W-150; i += 150){
+		for(var j = 135; j < SCREEN_H-75; j += 150){
+			obstacles.add({
+				x : i,
+				y : j,
+				radius : 25
+			});
+		}
+		
 	}
 	
 }
