@@ -6,8 +6,6 @@ var obstacles;
 
 var score = 0;
 
-var maxSee = 5;
-
 function draw()
 {
 	boids.forEach(function(boid){
@@ -155,11 +153,11 @@ function load_elements(){
 	
 	obstacles = new Set();
 	
-	for(var i = 0 ; i<3; i++){
+	for(var i = 0 ; i<rand()%3+3; i++){
 		obstacles.add({
-			x : rand()%SCREEN_W,
-			y : rand()%SCREEN_H,
-			radius : rand()%25 + 25
+			x : 75 + rand()%(SCREEN_W-250),
+			y : 75 + rand()%(SCREEN_H-250),
+			radius : rand()%50 + 25
 		});
 	}
 	
@@ -224,7 +222,16 @@ function separation(boid, neighbors){
 }
 
 function boidFacesObstacle(boid, obstacle){
-	return distance(obstacle.x, obstacle.y, boid.x, boid.y) <= obstacle.radius + 10 || distance(obstacle.x, obstacle.y, boid.x+boid.vx*maxSee, boid.y+boid.vy*maxSee) <= obstacle.radius + 10 || distance(obstacle.x, obstacle.y, boid.x+boid.vx*maxSee*0.5, boid.y+boid.vy*maxSee*0.5) <= obstacle.radius + 10;
+	//return distance(obstacle.x, obstacle.y, boid.x, boid.y) <= obstacle.radius + 10 || distance(obstacle.x, obstacle.y, boid.x+boid.vx*maxSee, boid.y+boid.vy*maxSee) <= obstacle.radius + 10 || distance(obstacle.x, obstacle.y, boid.x+boid.vx*maxSee*0.5, boid.y+boid.vy*maxSee*0.5) <= obstacle.radius + 10;
+	
+	d = distance(obstacle.x, obstacle.y, boid.x, boid.y);
+	alpha = Math.asin((obstacle.radius+10)/d);
+	
+	d1 = distance(0, 0, boid.vx, boid.vy);
+	betha = Math.acos(((boid.vx*(obstacle.x-boid.x))+(boid.vy*(obstacle.y-boid.y)))/(d*d1));
+	
+	return alpha > betha && d < obstacle.radius + 50;
+	
 }
 
 function findMostThreateningObstacle(boid){
@@ -245,11 +252,16 @@ function collisionAvoidance(boid){
 	
 	var mostThreatening = findMostThreateningObstacle(boid);
 	
-	if(mostThreatening != undefined){
-		boid.vx += (boid.x + boid.vx*20*maxSee - mostThreatening.x);
-		boid.vy += (boid.y + boid.vy*20*maxSee - mostThreatening.y);
+	
+	
+	if(mostThreatening != undefined){	
+			d = distance(mostThreatening.x, mostThreatening.y, boid.x, boid.y);
+	
+			boid.vx += boid.x+boid.vx*d - mostThreatening.x; 
+			boid.vy += boid.y+boid.vy*d - mostThreatening.y;
+		}
 		
 		//normalize_velocity(boid);
-	}
+	
 	
 }
