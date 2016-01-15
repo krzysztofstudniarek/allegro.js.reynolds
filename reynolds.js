@@ -68,11 +68,9 @@ function ai(){
 					}
 				}
 			});
-			
-			//if(	findMostThreateningObstacle == undefined){
+		
 			separation(boid, predators);
 			normalize_velocity(boid);
-			//}
 			
 			var tmp = frand();
 			
@@ -209,7 +207,6 @@ function cohesion(boid, neighbors){
 	});
 	
 	if(neighbors.size != 0){
-		ang =  Math.atan(avgVy/avgVx);
 		boid.vx += avgVx/neighbors.size - boid.x;
 		boid.vy += avgVy/neighbors.size - boid.y;
 	}
@@ -220,13 +217,11 @@ function separation(boid, neighbors){
 	var avgVx = 0;
 	var avgVy = 0;
 	neighbors.forEach(function(neighbor){
-		//ang += Math.atan(neighbor.vy/neighbor.vx);
 		avgVx += neighbor.x - boid.x;
 		avgVy += neighbor.y - boid.y;
 	});
 	
 	if(neighbors.size != 0){
-		ang =  Math.atan(avgVy/avgVx);
 		boid.vx += -1*avgVx/neighbors.size;
 		boid.vy += -1*avgVy/neighbors.size;
 	}
