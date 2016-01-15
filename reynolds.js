@@ -7,6 +7,8 @@ var obstacles;
 
 var score = 0;
 
+var font1;
+
 function draw()
 {
 	boids.forEach(function(boid){
@@ -20,6 +22,8 @@ function draw()
 	obstacles.forEach(function(obstacle){
 		circlefill(canvas,obstacle.x,obstacle.y,obstacle.radius,makecol(0,0,255));
 	});
+	
+	textout(canvas,font1,score,50,50,40,makecol(255,255,255));
 }
 
 function update()
@@ -103,6 +107,7 @@ function ai(){
 			if(victim != undefined){
 				if(distance(boid.x, boid.y, victim.x, victim.y)<5){
 					boids.delete(victim);
+					score += 1;
 				}else{					
 					boid.vx += 0.5*(victim.x - boid.x);
 					boid.vy += 0.5*(victim.y - boid.y);
@@ -121,6 +126,7 @@ function main()
     enable_debug('debug');
     allegro_init_all("game_canvas", 800, 600);
 	load_elements();
+	font1 = load_font("./antilles.ttf");
     ready(function(){
         loop(function(){
 			wipe_log();
