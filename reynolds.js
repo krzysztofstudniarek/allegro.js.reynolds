@@ -1,5 +1,6 @@
 
 var boidSprite;
+var predatorSprite;
 
 var boids;
 var obstacles;
@@ -12,7 +13,7 @@ function draw()
 		if(!boid.isPredator){
 			rotate_sprite(canvas,boidSprite,boid.x,boid.y,DEG(Math.atan2(boid.vy,boid.vx)));
 		}else{
-			circlefill(canvas,boid.x,boid.y,7,makecol(255,0,0));
+			rotate_sprite(canvas,predatorSprite,boid.x,boid.y,DEG(Math.atan2(boid.vy,boid.vx)));
 		}
 	});
 	
@@ -136,6 +137,7 @@ END_OF_MAIN();
 function load_elements(){
 	
 	boidSprite = load_bitmap("boid.png");
+	predatorSprite = load_bitmap("predator.png");
 	
 	boids = new Set();
 	for(var i = 0; i<200; i++){
@@ -228,7 +230,7 @@ function boidFacesObstacle(boid, obstacle){
 	//return distance(obstacle.x, obstacle.y, boid.x, boid.y) <= obstacle.radius + 10 || distance(obstacle.x, obstacle.y, boid.x+boid.vx*maxSee, boid.y+boid.vy*maxSee) <= obstacle.radius + 10 || distance(obstacle.x, obstacle.y, boid.x+boid.vx*maxSee*0.5, boid.y+boid.vy*maxSee*0.5) <= obstacle.radius + 10;
 	
 	d = distance(obstacle.x, obstacle.y, boid.x, boid.y);
-	alpha = Math.asin((obstacle.radius+10)/d);
+	alpha = Math.asin((obstacle.radius+5)/d);
 	
 	d1 = distance(0, 0, boid.vx, boid.vy);
 	betha = Math.acos(((boid.vx*(obstacle.x-boid.x))+(boid.vy*(obstacle.y-boid.y)))/(d*d1));
