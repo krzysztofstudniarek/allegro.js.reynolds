@@ -6,6 +6,8 @@ var obstacles;
 
 var score = 0;
 
+var maxSee = 5;
+
 function draw()
 {
 	boids.forEach(function(boid){
@@ -64,7 +66,10 @@ function ai(){
 				}
 			});
 			
+			//if(	findMostThreateningObstacle == undefined){
 			separation(boid, predators);
+			normalize_velocity(boid);
+			//}
 			
 			var tmp = frand();
 			
@@ -82,19 +87,13 @@ function ai(){
 		
 			
 			//Velocity normalization
-			normalize_velocity(boid);
+			
 		}else{
 			
 			var victim;
 			
 			boids.forEach(function(vict){
-				
-				if(vict.isPredator){
-					predators.add(vict);
-				}
-				
 				var d = distance(boid.x, boid.y, vict.x, vict.y)
-				
 				if(vict != boid && victim == undefined && d< 100 && !vict.isPredator){
 					victim = vict;
 				}else if(victim != undefined && vict != boid && d < 100 && d < distance(victim.x, victim.y, boid.x, boid.y)&& !vict.isPredator){
@@ -103,52 +102,18 @@ function ai(){
 			});
 			
 			if(victim != undefined){
-				
 				if(distance(boid.x, boid.y, victim.x, victim.y)<5){
 					boids.delete(victim);
 				}else{					
-					boid.vx += victim.x - boid.x;
-					boid.vy += victim.y - boid.y;
-					
-					normalize_velocity(boid);
+					boid.vx += 0.5*(victim.x - boid.x);
+					boid.vy += 0.5*(victim.y - boid.y);
 				}
-
 			}
 		
 		}
-	
-	
-		//Obstacle Avoidance
-		obstacles.forEach(function(obstacle){
-			d = distance(obstacle.x, obstacle.y, boid.x, boid.y);
-			alpha = Math.asin((obstacle.radius+10)/d);
-			
-			d1 = distance(0, 0, boid.vx, boid.vy);
-			betha = Math.acos(((boid.vx*(obstacle.x-boid.x))+(boid.vy*(obstacle.y-boid.y)))/(d*d1));
-			//log(alpha > betha);
-			if(alpha > betha && d < obstacle.radius + 300){
-				gamma = (Math.asin((obstacle.y - boid.y)/d));
-				console.log(gamma + " : "+ alpha);
-				if(boid.x < obstacle.x){
-					if(gamma > 0){
-						boid.vx = Math.cos(gamma-alpha);
-						boid.vy = Math.sin(gamma-alpha);
-					}else{
-						boid.vx = Math.cos(gamma+alpha);
-						boid.vy = Math.sin(gamma+alpha);
-					}
-				}else{
-					if(gamma > 0){
-						boid.vx = -1*Math.cos(gamma-alpha);
-						boid.vy = Math.sin(gamma-alpha);
-					}else{
-						boid.vx = -1*Math.cos(gamma+alpha);
-						boid.vy = Math.sin(gamma+alpha);
-					}
-
-				}
-			}
-		});
+		
+		collisionAvoidance(boid);
+		normalize_velocity(boid);
 	});
 }
 
@@ -178,35 +143,25 @@ function load_elements(){
 	for(var i = 0; i<200; i++){
 		
 		var angle = Math.asin(2*frand()-1);
+		
 		boids.add({
 			x : rand()%SCREEN_W,
 			y : rand()%SCREEN_H,
 			vx : sgn(2*frand()-1)*Math.cos(angle),
 			vy : sgn(2*frand()-1)*Math.sin(angle),
-			isPredator : frand()<=0.02
+			isPredator : frand()<=0.01
 		});
 	}
 	
 	obstacles = new Set();
 	
-	/*obstacles.add({
-		x : SCREEN_W/2-200,
-		y : SCREEN_H/2-100,
-		radius : 50
-	});
-	
-	obstacles.add({
-		x : SCREEN_W/2+50,
-		y : SCREEN_H/2-50,
-		radius : 50
-	});
-	
-	obstacles.add({
-		x : SCREEN_W/2+200,
-		y : SCREEN_H/2+100,
-		radius : 50
-	});*/
-	
+	for(var i = 0 ; i<3; i++){
+		obstacles.add({
+			x : rand()%SCREEN_W,
+			y : rand()%SCREEN_H,
+			radius : rand()%25 + 25
+		});
+	}
 	
 }
 
@@ -215,6 +170,7 @@ function normalize_velocity(boid){
 	boid.vx = boid.vx/n;
 	boid.vy = boid.vy/n;
 }
+
 
 function alignment(boid, neighbors){
 	var ang = 0;
@@ -265,4 +221,35 @@ function separation(boid, neighbors){
 		boid.vx += -1*avgVx/neighbors.size;
 		boid.vy += -1*avgVy/neighbors.size;
 	}
+}
+
+function boidFacesObstacle(boid, obstacle){
+	return distance(obstacle.x, obstacle.y, boid.x, boid.y) <= obstacle.radius + 10 || distance(obstacle.x, obstacle.y, boid.x+boid.vx*maxSee, boid.y+boid.vy*maxSee) <= obstacle.radius + 10 || distance(obstacle.x, obstacle.y, boid.x+boid.vx*maxSee*0.5, boid.y+boid.vy*maxSee*0.5) <= obstacle.radius + 10;
+}
+
+function findMostThreateningObstacle(boid){
+	var mostThreatening;
+
+	obstacles.forEach(function(value){
+		//console.log((mostThreating == undefined || (mostThreating != undefined && distance(boid.x,boid.y, value.x, value.y) < distance(boid.x, boid.y, mostThreating.x, mostThreating.y))));
+		if(boidFacesObstacle(boid, value) && (mostThreatening == undefined || (mostThreatening != undefined && distance(boid.x,boid.y, value.x, value.y) < distance(boid.x, boid.y, mostThreatening.x, mostThreatening.y)))){
+			mostThreatening = value;
+		}
+	});
+	
+	return mostThreatening;
+	
+}
+
+function collisionAvoidance(boid){
+	
+	var mostThreatening = findMostThreateningObstacle(boid);
+	
+	if(mostThreatening != undefined){
+		boid.vx += (boid.x + boid.vx*20*maxSee - mostThreatening.x);
+		boid.vy += (boid.y + boid.vy*20*maxSee - mostThreatening.y);
+		
+		//normalize_velocity(boid);
+	}
+	
 }
