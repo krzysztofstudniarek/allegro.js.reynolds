@@ -80,7 +80,7 @@ function ai(){
 				alignment(boid, neighbors);
 			
 			//Cohesion
-			if(tmp <= 0.03)
+			if(tmp <= 0.01)
 				cohesion(boid, neighbors);
 			
 			//Separation
@@ -130,9 +130,6 @@ function main()
 END_OF_MAIN();
 
 function load_elements(){
-	
-	boidSprite = load_bitmap("boid.png");
-	predatorSprite = load_bitmap("predator.png");
 	
 	boids = new Set();
 	for(var i = 0; i<200; i++){
