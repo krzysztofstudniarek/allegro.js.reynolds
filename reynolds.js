@@ -13,9 +13,10 @@ function draw()
 {
 	boids.forEach(function(boid){
 		if(!boid.isPredator){
-			rotate_sprite(canvas,boidSprite,boid.x,boid.y,DEG(Math.atan2(boid.vy,boid.vx)));
+			circlefill(canvas, boid.x, boid.y, 5, makecol(0,0,0));
 		}else{
-			rotate_sprite(canvas,predatorSprite,boid.x,boid.y,DEG(Math.atan2(boid.vy,boid.vx)));
+			//rotate_sprite(canvas,predatorSprite,boid.x,boid.y,DEG(Math.atan2(boid.vy,boid.vx)));
+			circlefill(canvas, boid.x, boid.y, 5, makecol(255,0,0));
 		}
 	});
 	
@@ -91,26 +92,16 @@ function ai(){
 			
 		}else{
 			
-			var victim;
-			
 			boids.forEach(function(vict){
 				var d = distance(boid.x, boid.y, vict.x, vict.y)
-				if(vict != boid && victim == undefined && d< 100 && !vict.isPredator){
-					victim = vict;
-				}else if(victim != undefined && vict != boid && d < 100 && d < distance(victim.x, victim.y, boid.x, boid.y)&& !vict.isPredator){
-					victim = vict;
+				if(d<= 10 && vict != boid){
+					boids.delete(vict);
+					score += 1;
 				}
 			});
 			
-			if(victim != undefined){
-				if(distance(boid.x, boid.y, victim.x, victim.y)<5){
-					boids.delete(victim);
-					score += 1;
-				}else{					
-					boid.vx += 0.5*(victim.x - boid.x);
-					boid.vy += 0.5*(victim.y - boid.y);
-				}
-			}
+			seek(boid);
+			normalize_velocity(boid);
 		
 		}
 		
@@ -153,9 +144,17 @@ function load_elements(){
 			y : rand()%SCREEN_H,
 			vx : sgn(2*frand()-1)*Math.cos(angle),
 			vy : sgn(2*frand()-1)*Math.sin(angle),
-			isPredator : frand()<=0.01
+			isPredator : false
 		});
 	}
+
+	boids.add({
+			x : SCREEN_W/2,
+			y: SCREEN_H/2,
+			vx: 1,
+			vy: 1,
+			isPredator : true
+	});
 	
 	obstacles = new Set();
 	
@@ -169,105 +168,5 @@ function load_elements(){
 		}
 		
 	}
-	
-}
-
-function normalize_velocity(boid){
-	var n = Math.sqrt(boid.vx*boid.vx + boid.vy*boid.vy);	
-	boid.vx = boid.vx/n;
-	boid.vy = boid.vy/n;
-}
-
-
-function alignment(boid, neighbors){
-	var ang = 0;
-	var avgVx = 0;
-	var avgVy = 0;
-	neighbors.forEach(function(neighbor){
-		//ang += Math.atan(neighbor.vy/neighbor.vx);
-		avgVx += neighbor.vx;
-		avgVy += neighbor.vy;
-	});
-	
-	if(neighbors.size != 0){
-		ang =  Math.atan(avgVy/avgVx);
-		boid.vx += avgVx/neighbors.size;
-		boid.vy += avgVy/neighbors.size;	
-	}
-}
-
-function cohesion(boid, neighbors){
-	var ang = 0;
-	var avgVx = 0;
-	var avgVy = 0;
-	neighbors.forEach(function(neighbor){
-		//ang += Math.atan(neighbor.vy/neighbor.vx);
-		avgVx += neighbor.x;
-		avgVy += neighbor.y;
-	});
-	
-	if(neighbors.size != 0){
-		boid.vx += avgVx/neighbors.size - boid.x;
-		boid.vy += avgVy/neighbors.size - boid.y;
-	}
-}
-
-function separation(boid, neighbors){
-	var ang = 0;
-	var avgVx = 0;
-	var avgVy = 0;
-	neighbors.forEach(function(neighbor){
-		avgVx += neighbor.x - boid.x;
-		avgVy += neighbor.y - boid.y;
-	});
-	
-	if(neighbors.size != 0){
-		boid.vx += -1*avgVx/neighbors.size;
-		boid.vy += -1*avgVy/neighbors.size;
-	}
-}
-
-function boidFacesObstacle(boid, obstacle){
-	//return distance(obstacle.x, obstacle.y, boid.x, boid.y) <= obstacle.radius + 10 || distance(obstacle.x, obstacle.y, boid.x+boid.vx*maxSee, boid.y+boid.vy*maxSee) <= obstacle.radius + 10 || distance(obstacle.x, obstacle.y, boid.x+boid.vx*maxSee*0.5, boid.y+boid.vy*maxSee*0.5) <= obstacle.radius + 10;
-	
-	d = distance(obstacle.x, obstacle.y, boid.x, boid.y);
-	alpha = Math.asin((obstacle.radius+5)/d);
-	
-	d1 = distance(0, 0, boid.vx, boid.vy);
-	betha = Math.acos(((boid.vx*(obstacle.x-boid.x))+(boid.vy*(obstacle.y-boid.y)))/(d*d1));
-	
-	return alpha > betha && d < obstacle.radius + 50;
-	
-}
-
-function findMostThreateningObstacle(boid){
-	var mostThreatening;
-
-	obstacles.forEach(function(value){
-		//console.log((mostThreating == undefined || (mostThreating != undefined && distance(boid.x,boid.y, value.x, value.y) < distance(boid.x, boid.y, mostThreating.x, mostThreating.y))));
-		if(boidFacesObstacle(boid, value) && (mostThreatening == undefined || (mostThreatening != undefined && distance(boid.x,boid.y, value.x, value.y) < distance(boid.x, boid.y, mostThreatening.x, mostThreatening.y)))){
-			mostThreatening = value;
-		}
-	});
-	
-	return mostThreatening;
-	
-}
-
-function collisionAvoidance(boid){
-	
-	var mostThreatening = findMostThreateningObstacle(boid);
-	
-	
-	
-	if(mostThreatening != undefined){	
-			d = distance(mostThreatening.x, mostThreatening.y, boid.x, boid.y);
-	
-			boid.vx += boid.x+boid.vx*d - mostThreatening.x; 
-			boid.vy += boid.y+boid.vy*d - mostThreatening.y;
-		}
-		
-		//normalize_velocity(boid);
-	
 	
 }
