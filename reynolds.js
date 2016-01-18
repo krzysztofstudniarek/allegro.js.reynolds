@@ -80,7 +80,7 @@ function ai(){
 				alignment(boid, neighbors);
 			
 			//Cohesion
-			if(tmp <= 0.01)
+			if(tmp <= 0.03)
 				cohesion(boid, neighbors);
 			
 			//Separation
