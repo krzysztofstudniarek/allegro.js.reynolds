@@ -1,5 +1,5 @@
 
-var MAX_FORCE = 0.005;
+var MAX_FORCE = 0.5;
 
 function normalize_velocity(boid){
 	var n = Math.sqrt(boid.vx*boid.vx + boid.vy*boid.vy);	
