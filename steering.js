@@ -94,7 +94,7 @@ function collisionAvoidance(boid){
 
 function seek(boid){
 	var d = distance(mouse_x, mouse_y, boid.x, boid.y);
-	if(d < 10){
+	if(d < 100){
 		
 		boid.vx = (mouse_x - boid.x)*MAX_FORCE;
 		boid.vy = (mouse_y - boid.y)*MAX_FORCE;
